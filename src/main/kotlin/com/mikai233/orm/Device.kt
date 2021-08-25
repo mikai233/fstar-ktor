@@ -1,6 +1,5 @@
 package com.mikai233.orm
 
-import kotlinx.serialization.Serializable
 import org.ktorm.dsl.QueryRowSet
 import org.ktorm.schema.BaseTable
 import org.ktorm.schema.varchar
@@ -11,7 +10,6 @@ import org.ktorm.schema.varchar
  * @date 2021/8/22
  */
 
-@Serializable
 data class Device(
     val androidId: String,
     val brand: String,

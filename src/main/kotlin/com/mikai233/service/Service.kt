@@ -7,3 +7,5 @@ package com.mikai233.service
  */
 
 val userService = UserService()
+
+val versionService = VersionService()

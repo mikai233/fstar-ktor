@@ -20,14 +20,15 @@ repositories {
 
 dependencies {
     implementation("org.slf4j:slf4j-api:1.7.32")
-    implementation("ch.qos.logback:logback-classic:1.2.5")
+    implementation("com.qiniu:qiniu-java-sdk:7.8.0")
     implementation("mysql:mysql-connector-java:8.0.26")
     implementation("redis.clients:jedis:3.6.3")
     implementation("org.ktorm:ktorm-core:$kotlinOrmVersion")
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
-    implementation("io.ktor:ktor-serialization:$ktorVersion")
+//    implementation("io.ktor:ktor-serialization:$ktorVersion")
+    implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")

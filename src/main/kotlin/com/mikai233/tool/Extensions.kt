@@ -19,11 +19,11 @@ fun Application.propertyOrNull(path: String) = environment.config.propertyOrNull
 
 fun Application.propertiesOrNull(path: String) = environment.config.propertyOrNull(path)?.getList()
 
+/**
+ * 在IO线程中操作数据库读写
+ */
 suspend fun <T> DB.asyncIO(block: DB.() -> T): T {
     return withContext(Dispatchers.IO) {
         block()
     }
 }
-
-fun wrapResult(data: Any? = null, code: Int = 200, message: String? = null) =
-    hashMapOf("data" to data, "code" to code, "message" to message)

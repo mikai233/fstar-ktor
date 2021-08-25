@@ -1,7 +1,5 @@
 package com.mikai233.orm
 
-import com.mikai233.service.Data
-import kotlinx.serialization.Serializable
 import org.ktorm.dsl.QueryRowSet
 import org.ktorm.schema.BaseTable
 import org.ktorm.schema.int
@@ -13,8 +11,7 @@ import org.ktorm.schema.varchar
  * @date 2021/8/22
  */
 
-@Serializable
-data class User(val id: Int, val username: String, val password: String, val roles: List<String>) : Data
+data class User(val id: Int, val username: String, val password: String, val roles: List<String>)
 
 object Users : BaseTable<User>("fstar_admin") {
     val id = int("id").primaryKey()

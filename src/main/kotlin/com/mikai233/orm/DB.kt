@@ -27,4 +27,5 @@ object DB {
 
     val devices get() = database.sequenceOf(Devices)
     val users get() = database.sequenceOf(Users)
+    val versions get() = database.sequenceOf(Versions)
 }

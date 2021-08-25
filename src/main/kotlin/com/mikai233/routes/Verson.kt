@@ -1,14 +1,12 @@
 package com.mikai233.routes
 
-import com.mikai233.orm.DB
-import com.mikai233.orm.Devices
-import com.mikai233.tool.asyncIO
+import com.mikai233.orm.CommonResult
+import com.mikai233.orm.Version
+import com.mikai233.service.versionService
 import io.ktor.application.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.ktorm.dsl.from
-import org.ktorm.dsl.map
-import org.ktorm.dsl.select
 
 /**
  * @author mikai233
@@ -20,13 +18,25 @@ fun Application.versionRoute() {
     routing {
         route("/version") {
             get("/current") {
-                val e = DB.asyncIO {
-                    database.from(Devices).select().map { Devices.createEntity(it) }
-                }
-                call.respond(e)
+                val current = versionService.getCurrentVersion()
+                call.respond(CommonResult(data = current))
             }
             get("/all") {
-                call.respondText { "all version" }
+                val versions = versionService.getAllVersion()
+                call.respond(CommonResult(data = versions))
+            }
+            post("/add") {
+                val version = call.receive<Version>()
+                versionService.addVersion(version).also {
+                    call.respond(CommonResult(data = it))
+                }
+            }
+            delete("/{id}") {
+                call.parameters["id"]?.toIntOrNull()?.let { id ->
+                    versionService.deleteVersionById(id).also {
+                        call.respond(CommonResult(data = it))
+                    }
+                }
             }
         }
     }

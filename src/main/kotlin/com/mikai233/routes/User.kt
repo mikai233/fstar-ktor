@@ -2,16 +2,17 @@ package com.mikai233.routes
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.mikai233.orm.CommonResult
 import com.mikai233.orm.DB
-import com.mikai233.service.ResultWrap
 import com.mikai233.service.userService
 import com.mikai233.tool.asyncIO
 import com.mikai233.tool.property
-import com.mikai233.tool.wrapResult
+import com.mikai233.tool.userNotFound
 import io.ktor.application.*
+import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.ktorm.entity.toList
+import org.ktorm.entity.map
 import java.util.*
 
 /**
@@ -37,16 +38,25 @@ fun Application.adminRoute() {
                         .withClaim("username", user.username)
                         .withExpiresAt(Date(System.currentTimeMillis() + 60000))
                         .sign(Algorithm.HMAC256(secret))
-                    call.respond(wrapResult(data = hashMapOf("token" to token)))
+                    call.respond(
+                        CommonResult(
+                            data = hashMapOf(
+                                "token" to token,
+                                "tokenHeader" to property("jwt.tokenHeader"),
+                                "tokenPrefix" to property("jwt.tokenPrefix")
+                            )
+                        )
+                    )
                 } else {
-                    call.respond("user not found")
+                    call.respond(CommonResult(httpStatusCode = userNotFound))
                 }
             }
             get("/user") {
                 val users = DB.asyncIO {
-                    users.toList()
+                    //用户的密码不返回给客户端
+                    users.map { it.copy(password = "") }.toList()
                 }
-                call.respond(ResultWrap(data = users))
+                call.respond(HttpStatusCode.OK, CommonResult(data = users))
             }
         }
     }
