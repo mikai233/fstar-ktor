@@ -26,8 +26,4 @@ class UserService {
 
         }
     }
-
-    fun checkPassword(rawPassword: CharSequence, encodedPassword: String) {
-
-    }
 }
