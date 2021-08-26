@@ -5,6 +5,7 @@ import com.mikai233.orm.User
 import com.mikai233.orm.Users
 import com.mikai233.tool.asyncIO
 import org.ktorm.dsl.*
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 /**
  * @author mikai233
@@ -13,6 +14,7 @@ import org.ktorm.dsl.*
  */
 
 class UserService {
+    val passwordEncoder = BCryptPasswordEncoder()
     suspend fun getUserByName(name: String): List<User> {
         return DB.asyncIO {
             database.from(Users).select().where { Users.username eq name }.map { Users.createEntity(it) }
@@ -23,5 +25,9 @@ class UserService {
         return DB.asyncIO {
 
         }
+    }
+
+    fun checkPassword(rawPassword: CharSequence, encodedPassword: String) {
+
     }
 }

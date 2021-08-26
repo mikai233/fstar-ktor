@@ -32,8 +32,8 @@ fun main() {
 }
 
 fun Application.module() {
-    configureRouting()
     configureSecurity()
+    configureRouting()
     configureHTTP()
     configureSerialization()
 }

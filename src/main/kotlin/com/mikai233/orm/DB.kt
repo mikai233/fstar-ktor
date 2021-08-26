@@ -5,6 +5,7 @@ import org.ktorm.database.Database
 import org.ktorm.entity.sequenceOf
 import org.ktorm.logging.ConsoleLogger
 import org.ktorm.logging.LogLevel
+import org.ktorm.support.mysql.MySqlDialect
 
 /**
  * @author mikai233
@@ -21,6 +22,7 @@ object DB {
             driver = config.property("database.driver").getString(),
             user = config.property("database.user").getString(),
             password = config.property("database.password").getString(),
+            dialect = MySqlDialect(),
             logger = ConsoleLogger(threshold = LogLevel.INFO)
         )
     }
