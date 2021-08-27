@@ -14,3 +14,11 @@ import io.ktor.http.*
  * @param data 任意类型的消息体
  */
 data class CommonResult(val httpStatusCode: HttpStatusCode = HttpStatusCode.OK, val data: Any? = null)
+
+/**
+ * 兼容老客户端的统一返回值
+ * @param data 任意类型的返回结果
+ * @param message 提示消息
+ * @param code 状态码
+ */
+data class OldCommonResult(val data: Any? = null, val message: String = "", val code: Int = HttpStatusCode.OK.value)

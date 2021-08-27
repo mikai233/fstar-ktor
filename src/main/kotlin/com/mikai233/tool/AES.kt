@@ -9,6 +9,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
+@Suppress("unused")
 object AesCryptUtil {
     private const val AES_MODE = "AES/CBC/PKCS7Padding"
     private const val CHARSET = "UTF-8"

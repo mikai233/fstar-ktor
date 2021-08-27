@@ -11,3 +11,5 @@ val userService = UserService()
 val versionService = VersionService()
 
 val redisService = RedisService()
+
+val scoreService = ScoreService()

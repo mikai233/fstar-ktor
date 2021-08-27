@@ -16,7 +16,7 @@ data class Version(
     val downloadUrl: String,
 )
 
-object Versions : BaseTable<Version>("changelog") {
+object Versions : BaseTable<Version>("changelog_v2") {
     val id = int("id").primaryKey()
     val buildNumber = int("build_number")
     val version = varchar("version")

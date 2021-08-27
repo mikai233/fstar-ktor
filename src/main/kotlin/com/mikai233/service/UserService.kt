@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.mikai233.service
 
 import com.mikai233.orm.DB
