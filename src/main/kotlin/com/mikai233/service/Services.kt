@@ -13,3 +13,7 @@ val versionService = VersionService()
 val redisService = RedisService()
 
 val scoreService = ScoreService()
+
+val messageService = MessageService()
+
+val deviceService = DeviceService()

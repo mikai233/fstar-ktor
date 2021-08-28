@@ -1,5 +1,7 @@
 package com.mikai233.orm
 
+import com.mikai233.tool.asyncIO
+import io.ktor.config.*
 import redis.clients.jedis.Jedis
 
 /**
@@ -9,5 +11,10 @@ import redis.clients.jedis.Jedis
  */
 
 object Redis {
-    val client = Jedis()
+    lateinit var client: Jedis
+    fun init(config: ApplicationConfig) {
+        val host = config.property("redis.host").getString()
+        val port = config.property("redis.port").getString().toIntOrNull() ?: 6379
+        client = Jedis(host, port)
+    }
 }

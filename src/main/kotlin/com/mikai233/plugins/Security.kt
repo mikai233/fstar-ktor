@@ -27,7 +27,7 @@ fun Application.configureSecurity() {
                 val claims = credential.payload.claims
                 val audience = credential.payload.audience
                 claims["username"]?.asString()?.let { username ->
-                    userService.getUserByName(username).firstOrNull()?.let { user ->
+                    userService.getUsersByName(username).firstOrNull()?.let { user ->
                         user.takeIf {
                             it.roles.contains("ROLE_ADMIN") && it.username == username && audience.contains(jwtAudience)
                         }?.let {
@@ -45,7 +45,7 @@ fun Application.configureSecurity() {
                 val claims = credential.payload.claims
                 val audience = credential.payload.audience
                 claims["username"]?.asString()?.let { username ->
-                    userService.getUserByName(username).firstOrNull()?.let { user ->
+                    userService.getUsersByName(username).firstOrNull()?.let { user ->
                         user.takeIf {
                             it.roles.contains("ROLE_USER") && it.username == username && audience.contains(jwtAudience)
                         }?.let {

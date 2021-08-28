@@ -3,9 +3,15 @@
 package com.mikai233.tool
 
 import com.mikai233.orm.DB
+import com.mikai233.orm.Redis
 import io.ktor.application.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * @author mikai233
@@ -40,11 +46,33 @@ fun Application.propertiesOrNull(path: String) = environment.config.propertyOrNu
 //    }
 //}
 
+fun exceptionHandler(context: CoroutineContext, throwable: Throwable) {
+    val coroutineLogger = context[CoroutineLogger]
+    coroutineLogger?.logger?.error("{}", context, throwable)
+}
+
+class CoroutineLogger : AbstractCoroutineContextElement(Key) {
+    val logger: Logger = LoggerFactory.getLogger(javaClass)
+
+    companion object Key : CoroutineContext.Key<CoroutineLogger>
+}
+
 /**
  * 在IO线程中操作数据库读写
+ * 默认添加[CoroutineLogger]
  */
-suspend fun <T> DB.asyncIO(block: DB.() -> T): T {
-    return withContext(Dispatchers.IO) {
+suspend fun <T> DB.asyncIO(context: CoroutineContext = EmptyCoroutineContext, block: suspend DB.() -> T): T {
+    return withContext(Dispatchers.IO + CoroutineLogger() + context) {
+        block()
+    }
+}
+
+/**
+ * 在IO线程中操作Redis数据库读写
+ * 默认添加[CoroutineLogger]
+ */
+suspend fun <T> Redis.asyncIO(context: CoroutineContext = EmptyCoroutineContext, block: suspend Redis.() -> T): T {
+    return withContext(Dispatchers.IO + CoroutineLogger() + context) {
         block()
     }
 }

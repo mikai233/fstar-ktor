@@ -3,9 +3,9 @@ package com.mikai233.orm
 import io.ktor.config.*
 import org.ktorm.database.Database
 import org.ktorm.entity.sequenceOf
-import org.ktorm.logging.ConsoleLogger
-import org.ktorm.logging.LogLevel
+import org.ktorm.logging.Slf4jLoggerAdapter
 import org.ktorm.support.mysql.MySqlDialect
+import org.slf4j.LoggerFactory
 
 /**
  * @author mikai233
@@ -15,6 +15,7 @@ import org.ktorm.support.mysql.MySqlDialect
 
 object DB {
     lateinit var database: Database
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     fun init(config: ApplicationConfig) {
         database = Database.connect(
@@ -23,7 +24,7 @@ object DB {
             user = config.property("database.user").getString(),
             password = config.property("database.password").getString(),
             dialect = MySqlDialect(),
-            logger = ConsoleLogger(threshold = LogLevel.INFO)
+            logger = Slf4jLoggerAdapter(logger)
         )
     }
 
@@ -31,4 +32,5 @@ object DB {
     val users get() = database.sequenceOf(Users)
     val versions get() = database.sequenceOf(Versions)
     val scores get() = database.sequenceOf(Scores)
+    val messages get() = database.sequenceOf(Messages)
 }

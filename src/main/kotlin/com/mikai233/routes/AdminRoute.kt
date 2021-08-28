@@ -3,19 +3,14 @@ package com.mikai233.routes
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.mikai233.orm.CommonResult
-import com.mikai233.orm.DB
 import com.mikai233.orm.LoginRequest
 import com.mikai233.service.userService
 import com.mikai233.tool.*
 import io.ktor.application.*
 import io.ktor.auth.*
-import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.ktorm.entity.drop
-import org.ktorm.entity.map
-import org.ktorm.entity.take
 import java.util.*
 
 /**
@@ -42,10 +37,10 @@ fun Application.adminRoute() {
                     call.respond(CommonResult(requestParamInvalid))
                     return@post
                 }
-                val users = userService.getUserByName(loginRequest.username)
+                val users = userService.getUsersByName(loginRequest.username)
                 if (users.isNotEmpty()) {
                     val user = users.first()
-                    val match = userService.passwordEncoder.matches(loginRequest.password, user.password)
+                    val match = userService.matches(loginRequest.password, user.password)
                     if (match) {
                         val audience = property("jwt.audience")
                         val issuer = property("jwt.issuer")
@@ -73,7 +68,7 @@ fun Application.adminRoute() {
                 }
             }
             /**
-             * 鉴权接口
+             * 需要鉴权的接口
              */
             authenticate("ROLE_ADMIN") {
                 /**
@@ -87,23 +82,33 @@ fun Application.adminRoute() {
                         call.respond(CommonResult(requestParamInvalid))
                         return@get
                     }
-                    val users = DB.asyncIO {
-                        //用户的密码不返回给客户端
-                        users.drop((page - 1) * size).take(size).map { it.copy(password = "") }.toList()
-                    }
-                    call.respond(HttpStatusCode.OK, CommonResult(data = users))
+                    //密码不返回给客户端
+                    val users = userService.getUsersByPage(page, size).map { it.copy(password = "") }
+                    call.respond(CommonResult(data = users))
                 }
                 /**
                  * 按username获取用户信息
                  */
                 get("/user/username/{username}") {
-
+                    val username = call.parameters["username"]
+                    if (username == null) {
+                        call.respond(CommonResult(requestParamInvalid))
+                        return@get
+                    }
+                    val users = userService.getUsersByName(username).map { it.copy(password = "") }
+                    call.respond(CommonResult(data = users))
                 }
                 /**
                  * 按id获取用户信息
                  */
                 get("/user/id/{id}") {
-
+                    val id = call.parameters["id"]?.toIntOrNull()
+                    if (id == null) {
+                        call.respond(CommonResult(requestParamInvalid))
+                        return@get
+                    }
+                    val user = userService.getUserById(id)
+                    call.respond(CommonResult(data = user))
                 }
             }
         }

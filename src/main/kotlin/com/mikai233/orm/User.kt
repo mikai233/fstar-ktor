@@ -22,6 +22,6 @@ object Users : BaseTable<User>("fstar_admin") {
         id = row[id] ?: 0,
         username = row[username].orEmpty(),
         password = row[password].orEmpty(),
-        roles = row[roles]?.split(",") ?: arrayListOf()
+        roles = row[roles]?.split(",") ?: emptyList()
     )
 }

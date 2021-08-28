@@ -4,9 +4,11 @@ import com.mikai233.orm.DB
 import com.mikai233.orm.Version
 import com.mikai233.orm.Versions
 import com.mikai233.tool.asyncIO
-import org.ktorm.dsl.*
-import org.ktorm.entity.maxBy
+import org.ktorm.dsl.eq
+import org.ktorm.dsl.insert
+import org.ktorm.entity.firstOrNull
 import org.ktorm.entity.removeIf
+import org.ktorm.entity.sortedByDescending
 import org.ktorm.entity.toList
 
 /**
@@ -41,12 +43,9 @@ class VersionService {
         }
     }
 
-    suspend fun getCurrentVersion(): Version {
+    suspend fun getCurrentVersion(): Version? {
         return DB.asyncIO {
-            val maxBuildNumber = requireNotNull(versions.maxBy { it.buildNumber })
-            database.from(Versions).select().where { Versions.buildNumber eq maxBuildNumber }.map {
-                Versions.createEntity(it)
-            }.first()
+            versions.sortedByDescending { it.buildNumber }.firstOrNull()
         }
     }
 }

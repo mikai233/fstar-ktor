@@ -1,10 +1,10 @@
 package com.mikai233.routes
 
-import com.mikai233.orm.CommonResult
-import com.mikai233.orm.OldCommonResult
-import com.mikai233.orm.Version
-import com.mikai233.service.scoreService
-import com.mikai233.service.versionService
+import com.mikai233.orm.*
+import com.mikai233.service.*
+import com.mikai233.tool.property
+import com.mikai233.tool.requestParamInvalid
+import com.qiniu.util.Auth
 import io.ktor.application.*
 import io.ktor.request.*
 import io.ktor.response.*
@@ -55,7 +55,6 @@ fun Application.versionRoute() {
                 }
                 get("/current_version") {
                     val currentVersion = versionService.getCurrentVersion()
-                    println(currentVersion)
                     call.respond(OldCommonResult(data = currentVersion))
                 }
             }
@@ -71,6 +70,67 @@ fun Application.versionRoute() {
                     }
                     val scores = scoreService.getScoresByClassNumber(classNumber)
                     call.respond(OldCommonResult(data = scores))
+                }
+                post {
+                    val scores = call.receive<List<Score>>()
+                    val result = scoreService.addScores(scores)
+                    call.respond(OldCommonResult(data = result))
+                }
+            }
+            /**
+             * 消息
+             */
+            route("/message") {
+                //全部消息
+                get {
+                    val messages = messageService.getMessages()
+                    call.respond(OldCommonResult(messages))
+                }
+                //最新一条消息
+                get("/latest") {
+                    val current = messageService.getCurrentMessage()
+                    call.respond(OldCommonResult(current))
+                }
+            }
+            /**
+             * 服务
+             */
+            route("/service") {
+                /**
+                 * 这里根据AndroidId进行设备的区分
+                 * 由于没有获取Android电话权限，而采用AndroidId来标识设备，AndroidId有存在改变的可能
+                 * 这里仅对传入的设备进行存库操作，实际的用户数可能会小于统计的用户数，因为AndroidId有改变的可能
+                 * 用户的活跃度采用Redis进行统计
+                 */
+                post("/vitality") {
+                    val device = call.receive<Device>()
+                    redisService.zAddAndroidId(device.androidId)
+                    val exists = deviceService.getDeviceByAndroidId(device.androidId)
+                    if (exists == null) {
+                        deviceService.addDevice(device)
+                    }
+                }
+                get("/upload_token") {
+                    val key = call.request.queryParameters["key"]
+                    if (key == null) {
+                        call.respond(requestParamInvalid)
+                        return@get
+                    }
+                    val auth = Auth.create(property("qiniu.accessKey"), property("qiniu.secretKey"))
+                    val token = auth.uploadToken(property("qiniu.bucket"), key, 60, null)
+                    call.respond(OldCommonResult(token))
+                }
+                route("/just") {
+                    //校车
+                    get("/school_bus") {
+                        val url = redisService.getSchoolBusUrl()
+                        call.respond(OldCommonResult(url))
+                    }
+                    //校历
+                    get("/school_calendar") {
+                        val url = redisService.getSchoolCalendarUlr()
+                        call.respond(OldCommonResult(url))
+                    }
                 }
             }
         }
