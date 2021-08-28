@@ -132,6 +132,17 @@ fun Application.versionRoute() {
                         call.respond(OldCommonResult(url))
                     }
                 }
+                /**
+                 * 课表解析配置
+                 */
+                route("/config") {
+                    get {
+
+                    }
+                    get("/school/{schoolName}") {
+
+                    }
+                }
             }
         }
         route("/v3") {

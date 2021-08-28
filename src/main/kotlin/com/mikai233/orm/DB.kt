@@ -33,4 +33,5 @@ object DB {
     val versions get() = database.sequenceOf(Versions)
     val scores get() = database.sequenceOf(Scores)
     val messages get() = database.sequenceOf(Messages)
+    val parseConfigs get() = database.sequenceOf(ParseConfigs)
 }

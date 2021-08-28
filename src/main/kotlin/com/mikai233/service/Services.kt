@@ -17,3 +17,5 @@ val scoreService = ScoreService()
 val messageService = MessageService()
 
 val deviceService = DeviceService()
+
+val parseConfigService = ParseConfigService()
