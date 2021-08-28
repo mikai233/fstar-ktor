@@ -15,8 +15,8 @@
 
 ## 部署
 
-1. 配置文件为 **application.conf**共同的配置（配置中environment可以配置加载dev或者prod配置） **application_dev.conf**开发配置
-   **application_prod.conf**生产环境配置
+1. 配置文件为 **application.conf** 共同的配置（配置中environment可以配置加载dev或者prod配置） **application_dev.conf** 开发配置
+   **application_prod.conf** 生产环境配置
 2. 执行SQL建表
 3. 七牛云配置（非必要，用于客户端上传文件使用）
 4. 配置服务器证书
