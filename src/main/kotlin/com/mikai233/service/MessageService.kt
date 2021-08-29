@@ -27,11 +27,11 @@ class MessageService {
     suspend fun getMessagesByPage(page: Int, size: Int) = DB.asyncIO {
         require(page >= 0) { "page: $page must >= 0" }
         require(size >= 0) { "size: $size must >= 0" }
-        messages.drop(page * size).take(size).toList()
+        messages.sortedByDescending { it.publishTime }.drop(page * size).take(size).toList()
     }
 
     suspend fun getMessages() = DB.asyncIO {
-        messages.toList()
+        messages.sortedByDescending { it.publishTime }.toList()
     }
 
     suspend fun updateMessage(message: Message) = DB.asyncIO {
