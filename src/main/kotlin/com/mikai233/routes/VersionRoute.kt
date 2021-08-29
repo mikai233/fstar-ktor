@@ -3,6 +3,7 @@
 package com.mikai233.routes
 
 import com.google.gson.Gson
+import com.google.gson.internal.LinkedTreeMap
 import com.mikai233.orm.*
 import com.mikai233.service.*
 import com.mikai233.tool.*
@@ -205,7 +206,27 @@ fun Application.versionRoute() {
                     call.respond(OldCommonResult(data = scores))
                 }
                 post {
-                    val scores = call.receive<List<Score>>()
+                    //这里不知道为么传入List的类型在经过Gson反序列化之后都会变成LinkedTreeMap
+                    val scoresMap = call.receive<List<LinkedTreeMap<String, String>>>()
+                    val scores = scoresMap.map {
+                        Score(
+                            id = -1,
+                            studentNumber = it["studentNumber"] ?: "",
+                            no = it["no"] ?: "",
+                            semester = it["semester"] ?: "",
+                            scoreNo = it["scoreNo"] ?: "",
+                            name = it["name"] ?: "",
+                            score = it["score"] ?: "",
+                            credit = it["credit"] ?: "",
+                            period = it["period"] ?: "",
+                            evaluationMode = it["evaluationMode"] ?: "",
+                            courseProperty = it["courseProperty"] ?: "",
+                            courseNature = it["courseNature"] ?: "",
+                            alternativeCourseNumber = it["alternativeCourseNumber"] ?: "",
+                            alternativeCourseName = it["alternativeCourseName"] ?: "",
+                            scoreFlag = it["scoreFlag"] ?: ""
+                        )
+                    }
                     val exists = scores.firstOrNull()
                     if (exists != null) {
                         scoreService.deleteScoresByStudentNumber(exists.studentNumber)
