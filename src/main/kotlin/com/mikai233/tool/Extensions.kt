@@ -23,8 +23,8 @@ import kotlin.coroutines.EmptyCoroutineContext
  * @date 2021/8/22
  */
 
-const val Millisecond = 1000
-const val Seconds = Millisecond * 10
+const val Millisecond = 1
+const val Seconds = Millisecond * 1000
 const val Minutes = Seconds * 60
 const val Hours = Minutes * 60
 const val Days = Hours * 24
