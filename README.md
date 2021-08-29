@@ -5,13 +5,14 @@
 
 ## 技术选型
 
+- JDK11
 - Gradle 构建工具
 - Kotlin 后端服务主语言
 - Redis
 - MySQL
-- 采用Kotlin Ktor Web框架
-- ORM框架采用Ktorm
-- 鉴权JWT
+- Ktor Web框架
+- Ktorm ORM框架
+- JWT 鉴权
 
 ## 部署
 
@@ -19,8 +20,9 @@
    **application_prod.conf** 生产环境配置
 2. 执行SQL建表
 3. 七牛云配置（非必要，用于客户端上传文件使用）
-4. 配置服务器证书
+4. 开启HTTPS访问需要配置服务器证书
+5. 本项目采用Docker一键部署（手动部署执行Gradle Task **shadowJar**可生成Jar包）
 
 ## 其它
 
-**application_prod**在版本控制中没有提供，请自行添加 之前的后端服务是基于**SpringBoot**框架编写 这次的后端服务为了兼容老的客户端API做了一些取舍
+之前的后端服务是基于**SpringBoot**框架编写 这次的后端为了做兼容提供了之间的API接口

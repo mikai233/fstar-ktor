@@ -29,9 +29,9 @@ class ScoreService {
     }
 
     suspend fun getScoresByPage(page: Int, size: Int) = DB.asyncIO {
-        require(page > 0) { "page: $page must > 0" }
+        require(page >= 0) { "page: $page must >= 0" }
         require(size >= 0) { "size: $size must >= 0" }
-        scores.drop((page - 1) * size).take(size).toList()
+        scores.drop(page * size).take(size).toList()
     }
 
     suspend fun addScore(score: Score) = DB.asyncIO {

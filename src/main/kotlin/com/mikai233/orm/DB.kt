@@ -1,5 +1,7 @@
 package com.mikai233.orm
 
+import com.alibaba.druid.pool.DruidDataSource
+import com.alibaba.druid.proxy.DruidDriver
 import io.ktor.config.*
 import org.ktorm.database.Database
 import org.ktorm.entity.sequenceOf
@@ -18,14 +20,26 @@ object DB {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     fun init(config: ApplicationConfig) {
-        database = Database.connect(
-            url = config.property("database.url").getString(),
-            driver = config.property("database.driver").getString(),
-            user = config.property("database.user").getString(),
-            password = config.property("database.password").getString(),
-            dialect = MySqlDialect(),
-            logger = Slf4jLoggerAdapter(logger)
-        )
+        val dataSource = with(DruidDataSource()) {
+            url = config.property("database.url").getString()
+            driver = DruidDriver.getInstance().createDriver(config.property("database.driver").getString())
+            username = config.property("database.user").getString()
+            password = config.property("database.password").getString()
+            minIdle = 1
+            initialSize = 5
+            maxActive = 10
+            maxWait = 6000
+            timeBetweenEvictionRunsMillis = 2000
+            minEvictableIdleTimeMillis = 600000
+            maxEvictableIdleTimeMillis = 900000
+            isTestWhileIdle = true
+            isTestOnBorrow = false
+            isTestOnReturn = false
+            init()
+            this
+        }
+        database =
+            Database.connect(dataSource = dataSource, dialect = MySqlDialect(), logger = Slf4jLoggerAdapter(logger))
     }
 
     val devices get() = database.sequenceOf(Devices)

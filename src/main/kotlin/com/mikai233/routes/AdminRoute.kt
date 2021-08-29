@@ -1,17 +1,20 @@
+@file:Suppress("DuplicatedCode")
+
 package com.mikai233.routes
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import com.mikai233.orm.CommonResult
 import com.mikai233.orm.LoginRequest
+import com.mikai233.service.redisService
 import com.mikai233.service.userService
-import com.mikai233.tool.*
+import com.mikai233.tool.generateToken
+import com.mikai233.tool.passwordIncorrect
+import com.mikai233.tool.requestParamInvalid
+import com.mikai233.tool.userNotFound
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import java.util.*
 
 /**
  * @author mikai233
@@ -37,29 +40,10 @@ fun Application.adminRoute() {
                     call.respond(CommonResult(requestParamInvalid))
                     return@post
                 }
-                val users = userService.getUsersByName(loginRequest.username)
-                if (users.isNotEmpty()) {
-                    val user = users.first()
-                    val match = userService.matches(loginRequest.password, user.password)
-                    if (match) {
-                        val audience = property("jwt.audience")
-                        val issuer = property("jwt.issuer")
-                        val secret = property("jwt.secret")
-                        val token = JWT.create()
-                            .withAudience(audience)
-                            .withIssuer(issuer)
-                            .withClaim("username", user.username)
-                            .withExpiresAt(Date(System.currentTimeMillis() + 10 * Minutes))
-                            .sign(Algorithm.HMAC256(secret))
-                        call.respond(
-                            CommonResult(
-                                data = hashMapOf(
-                                    "token" to token,
-                                    "tokenHeader" to property("jwt.tokenHeader"),
-                                    "tokenPrefix" to property("jwt.tokenPrefix")
-                                )
-                            )
-                        )
+                val user = userService.getUsersByName(loginRequest.username).firstOrNull()
+                if (user != null) {
+                    if (userService.matches(loginRequest.password, user.password)) {
+                        call.respond(CommonResult(data = generateToken(user.username)))
                     } else {
                         call.respond(CommonResult(passwordIncorrect))
                     }
@@ -71,44 +55,80 @@ fun Application.adminRoute() {
              * 需要鉴权的接口
              */
             authenticate("ROLE_ADMIN") {
-                /**
-                 * 分页获取用户信息
-                 */
-                get("/user") {
-                    val parameters = call.request.queryParameters
-                    val page = parameters["page"]?.toInt()
-                    val size = parameters["size"]?.toInt()
-                    if (page == null || size == null || page < 1 || size < 0) {
-                        call.respond(CommonResult(requestParamInvalid))
-                        return@get
+                route("/user") {
+                    /**
+                     * 分页获取用户信息
+                     */
+                    get {
+                        val parameters = call.request.queryParameters
+                        val page = parameters["page"]?.toInt()
+                        val size = parameters["size"]?.toInt()
+                        if (page == null || size == null || page < 0 || size < 0) {
+                            call.respond(CommonResult(requestParamInvalid))
+                            return@get
+                        }
+                        //密码不返回给客户端
+                        val users = userService.getUsersByPage(page, size).map { it.copy(password = "") }
+                        call.respond(CommonResult(data = users))
                     }
-                    //密码不返回给客户端
-                    val users = userService.getUsersByPage(page, size).map { it.copy(password = "") }
-                    call.respond(CommonResult(data = users))
+                    /**
+                     * 按username获取用户信息
+                     */
+                    get("/username/{username}") {
+                        val username = call.parameters["username"]
+                        if (username == null) {
+                            call.respond(CommonResult(requestParamInvalid))
+                            return@get
+                        }
+                        val users = userService.getUsersByName(username).map { it.copy(password = "") }
+                        call.respond(CommonResult(data = users))
+                    }
+                    /**
+                     * 按id获取用户信息
+                     */
+                    get("/id/{id}") {
+                        val id = call.parameters["id"]?.toIntOrNull()
+                        if (id == null) {
+                            call.respond(CommonResult(requestParamInvalid))
+                            return@get
+                        }
+                        val user = userService.getUserById(id)
+                        call.respond(CommonResult(data = user))
+                    }
                 }
-                /**
-                 * 按username获取用户信息
-                 */
-                get("/user/username/{username}") {
-                    val username = call.parameters["username"]
-                    if (username == null) {
-                        call.respond(CommonResult(requestParamInvalid))
-                        return@get
+                route("/vitality") {
+                    get("/day") {
+                        redisService.currentDayVitality().size.also {
+                            call.respond(CommonResult(data = it))
+                        }
                     }
-                    val users = userService.getUsersByName(username).map { it.copy(password = "") }
-                    call.respond(CommonResult(data = users))
-                }
-                /**
-                 * 按id获取用户信息
-                 */
-                get("/user/id/{id}") {
-                    val id = call.parameters["id"]?.toIntOrNull()
-                    if (id == null) {
-                        call.respond(CommonResult(requestParamInvalid))
-                        return@get
+                    get("/week") {
+                        redisService.currentWeekVitality().size.also {
+                            call.respond(CommonResult(data = it))
+                        }
                     }
-                    val user = userService.getUserById(id)
-                    call.respond(CommonResult(data = user))
+                    get("/month") {
+                        redisService.currentMonthVitality().also {
+                            call.respond(CommonResult(data = it))
+                        }
+                    }
+                    route("/details") {
+                        get("/day") {
+                            redisService.currentDayVitality().also {
+                                call.respond(CommonResult(data = it))
+                            }
+                        }
+                        get("/week") {
+                            redisService.currentWeekVitality().also {
+                                call.respond(CommonResult(data = it))
+                            }
+                        }
+                        get("/month") {
+                            redisService.currentMonthVitality().also {
+                                call.respond(CommonResult(data = it))
+                            }
+                        }
+                    }
                 }
             }
         }

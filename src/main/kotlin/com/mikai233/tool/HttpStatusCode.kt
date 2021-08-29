@@ -10,6 +10,8 @@ import io.ktor.http.*
 
 val userNotFound = HttpStatusCode(4001, "用户名不存在")
 
-val passwordIncorrect = HttpStatusCode(4002, "密码不正确")
+val userAlreadyExists = HttpStatusCode(4002, "用户已存在")
 
-val requestParamInvalid = HttpStatusCode(4003, "请求参数不合法")
+val passwordIncorrect = HttpStatusCode(4003, "密码不正确")
+
+val requestParamInvalid = HttpStatusCode(4004, "请求参数不合法")

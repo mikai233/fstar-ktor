@@ -1,3 +1,5 @@
 # Project exclude paths
 /.gradle/
 /build/
+/src/main/resources/application_prod.conf
+/src/main/resources/keystore/

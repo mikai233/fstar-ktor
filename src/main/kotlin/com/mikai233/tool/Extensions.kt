@@ -2,6 +2,8 @@
 
 package com.mikai233.tool
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.mikai233.orm.DB
 import com.mikai233.orm.Redis
 import io.ktor.application.*
@@ -9,6 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import redis.clients.jedis.Jedis
+import java.util.*
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -33,18 +37,22 @@ fun Application.propertyOrNull(path: String) = environment.config.propertyOrNull
 
 fun Application.propertiesOrNull(path: String) = environment.config.propertyOrNull(path)?.getList()
 
-//@OptIn(ExperimentalContracts::class)
-//fun <T : Any> PipelineContext<*, ApplicationCall>.notNull(value: T?, lazyMessage: () -> Any): T {
-//    contract {
-//        returns() implies (value != null)
-//    }
-//    if (value == null) {
-//        val message = lazyMessage()
-//
-//    } else {
-//        return value
-//    }
-//}
+fun Application.generateToken(username: String): Map<String, String> {
+    val audience = property("jwt.audience")
+    val issuer = property("jwt.issuer")
+    val secret = property("jwt.secret")
+    val token = JWT.create()
+        .withAudience(audience)
+        .withIssuer(issuer)
+        .withClaim("username", username)
+        .withExpiresAt(Date(System.currentTimeMillis() + 10 * Minutes))
+        .sign(Algorithm.HMAC256(secret))
+    return hashMapOf(
+        "token" to token,
+        "tokenHeader" to property("jwt.tokenHeader"),
+        "tokenPrefix" to property("jwt.tokenPrefix")
+    )
+}
 
 fun exceptionHandler(context: CoroutineContext, throwable: Throwable) {
     val coroutineLogger = context[CoroutineLogger]
@@ -71,8 +79,13 @@ suspend fun <T> DB.asyncIO(context: CoroutineContext = EmptyCoroutineContext, bl
  * 在IO线程中操作Redis数据库读写
  * 默认添加[CoroutineLogger]
  */
-suspend fun <T> Redis.asyncIO(context: CoroutineContext = EmptyCoroutineContext, block: suspend Redis.() -> T): T {
+suspend fun <T> Redis.asyncIO(
+    context: CoroutineContext = EmptyCoroutineContext,
+    block: suspend Redis.(jedis: Jedis) -> T
+): T {
     return withContext(Dispatchers.IO + CoroutineLogger() + context) {
-        block()
+        jedisPool.resource.use {
+            block(it)
+        }
     }
 }

@@ -6,8 +6,11 @@ import com.mikai233.service.userService
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import java.security.Security
 
 fun Application.configureSecurity() {
+    Security.addProvider(BouncyCastleProvider())
     val jwtAudience = environment.config.property("jwt.audience").getString()
     val jwtRealm = environment.config.property("jwt.realm").getString()
     val jwtSecret = environment.config.property("jwt.secret").getString()
@@ -47,7 +50,9 @@ fun Application.configureSecurity() {
                 claims["username"]?.asString()?.let { username ->
                     userService.getUsersByName(username).firstOrNull()?.let { user ->
                         user.takeIf {
-                            it.roles.contains("ROLE_USER") && it.username == username && audience.contains(jwtAudience)
+                            it.roles.contains("ROLE_USER") || it.roles.contains("ROLE_ADMIN") && it.username == username && audience.contains(
+                                jwtAudience
+                            )
                         }?.let {
                             return@validate JWTPrincipal(credential.payload)
                         }

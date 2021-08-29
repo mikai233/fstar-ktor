@@ -28,13 +28,13 @@ class UserService {
     }
 
     suspend fun getUserById(id: Int) = DB.asyncIO {
-        users.findLast { it.id eq id }
+        users.find { it.id eq id }
     }
 
     suspend fun getUsersByPage(page: Int, size: Int) = DB.asyncIO {
-        require(page > 0) { "page: $page must > 0" }
+        require(page >= 0) { "page: $page must >= 0" }
         require(size >= 0) { "size: $size must >= 0" }
-        users.drop((page - 1) * size).take(size).toList()
+        users.drop(page * size).take(size).toList()
     }
 
     suspend fun createUser(user: User) = DB.asyncIO {

@@ -12,7 +12,8 @@ import kotlinx.coroutines.*
  * @email dreamfever2017@yahoo.com
  * @date 2021/8/28
  */
-//TODO 有问题
+
+//TODO
 @OptIn(DelicateCoroutinesApi::class)
 fun Application.configureDB() {
     GlobalScope.launch(Dispatchers.IO + CoroutineLogger()) {

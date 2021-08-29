@@ -17,7 +17,7 @@ import org.ktorm.entity.*
 
 class MessageService {
     suspend fun getMessageById(id: Int) = DB.asyncIO {
-        messages.findLast { it.id eq id }
+        messages.find { it.id eq id }
     }
 
     suspend fun getCurrentMessage() = DB.asyncIO {
@@ -25,9 +25,9 @@ class MessageService {
     }
 
     suspend fun getMessagesByPage(page: Int, size: Int) = DB.asyncIO {
-        require(page > 0) { "page: $page must > 0" }
+        require(page >= 0) { "page: $page must >= 0" }
         require(size >= 0) { "size: $size must >= 0" }
-        messages.drop((page - 1) * size).take(size).toList()
+        messages.drop(page * size).take(size).toList()
     }
 
     suspend fun getMessages() = DB.asyncIO {
@@ -36,8 +36,8 @@ class MessageService {
 
     suspend fun updateMessage(message: Message) = DB.asyncIO {
         database.update(Messages) {
-            where { it.id eq message.id }
             with(message) {
+                where { it.id eq id }
                 set(Messages.content, content)
                 set(Messages.publishTime, publishTime)
                 set(Messages.maxVisibleBuildNumber, maxVisibleBuildNumber)

@@ -29,7 +29,7 @@ data class Score(
     val scoreFlag: String
 )
 
-object Scores : BaseTable<Score>("score_v2") {
+object Scores : BaseTable<Score>("score") {
     val id = int("id").primaryKey()
     val studentNumber = varchar("student_number")
     val no = varchar("no")

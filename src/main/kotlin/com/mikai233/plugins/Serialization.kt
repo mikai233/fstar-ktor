@@ -7,8 +7,6 @@ import com.google.gson.JsonSerializer
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.gson.*
-import io.ktor.response.*
-import io.ktor.routing.*
 import java.lang.reflect.Type
 import java.time.LocalDateTime
 
@@ -27,12 +25,6 @@ fun Application.configureSerialization() {
         gson {
             setPrettyPrinting()
             registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter)
-        }
-    }
-
-    routing {
-        get("/json/kotlinx-serialization") {
-            call.respond(mapOf("hello" to "world"))
         }
     }
 }

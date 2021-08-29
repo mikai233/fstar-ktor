@@ -24,7 +24,7 @@ data class Device(
     val platform: String
 )
 
-object Devices : BaseTable<Device>("fstar_user") {
+object Devices : BaseTable<Device>("device") {
     val id = int("id").primaryKey()
     val appVersion = varchar("app_version")
     val buildNumber = int("build_number")

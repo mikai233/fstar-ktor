@@ -16,13 +16,13 @@ import java.time.LocalDateTime
 data class ParseConfig(
     val id: Int,
     val schoolName: String,
-    val schoolUrl: String,
+    val schoolUrl: String?,
     val user: String,
     val author: String,
-    val preUrl: String,
+    val preUrl: String?,
     val codeUrl: String,
     val publishTime: LocalDateTime,
-    val remark: String,
+    val remark: String?,
     val download: Int,
 )
 
@@ -40,13 +40,13 @@ object ParseConfigs : BaseTable<ParseConfig>("parse_config") {
     override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = ParseConfig(
         id = row[id] ?: 0,
         schoolName = row[schoolName].orEmpty(),
-        schoolUrl = row[schoolUrl].orEmpty(),
+        schoolUrl = row[schoolUrl],
         user = row[user].orEmpty(),
         author = row[author].orEmpty(),
-        preUrl = row[preUrl].orEmpty(),
+        preUrl = row[preUrl],
         codeUrl = row[codeUrl].orEmpty(),
         publishTime = row[publishTime] ?: LocalDateTime.MIN,
-        remark = row[remark].orEmpty(),
+        remark = row[remark],
         download = row[download] ?: 0,
     )
 }

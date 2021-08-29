@@ -9,10 +9,7 @@ import com.mikai233.tool.asyncIO
 import org.ktorm.dsl.eq
 import org.ktorm.dsl.insert
 import org.ktorm.dsl.update
-import org.ktorm.entity.drop
-import org.ktorm.entity.findLast
-import org.ktorm.entity.take
-import org.ktorm.entity.toList
+import org.ktorm.entity.*
 
 /**
  * @author mikai233
@@ -22,17 +19,17 @@ import org.ktorm.entity.toList
 
 class DeviceService {
     suspend fun getDeviceById(id: Int): Device? = DB.asyncIO {
-        devices.findLast { it.id eq id }
+        devices.find { it.id eq id }
     }
 
     suspend fun getDeviceByAndroidId(id: String) = DB.asyncIO {
         devices.findLast { it.androidId eq id }
     }
 
-    suspend fun getDevicesByPage(page: Int, size: Int): List<Device> = DB.asyncIO {
-        require(page > 0) { "page: $page must > 0" }
+    suspend fun getDevicesByPage(page: Int, size: Int) = DB.asyncIO {
+        require(page >= 0) { "page: $page must >= 0" }
         require(size >= 0) { "size: $size must >= 0" }
-        devices.drop((page - 1) * size).take(size).toList()
+        devices.drop(page * size).take(size).toList()
     }
 
     suspend fun addDevice(device: Device) = DB.asyncIO {

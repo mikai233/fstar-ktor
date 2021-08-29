@@ -7,8 +7,7 @@ import com.mikai233.orm.ParseConfig
 import com.mikai233.orm.ParseConfigs
 import com.mikai233.tool.asyncIO
 import org.ktorm.dsl.*
-import org.ktorm.entity.filter
-import org.ktorm.entity.findLast
+import org.ktorm.entity.*
 import java.time.LocalDateTime
 
 /**
@@ -19,15 +18,25 @@ import java.time.LocalDateTime
 
 class ParseConfigService {
     suspend fun getConfigById(id: Int) = DB.asyncIO {
-        parseConfigs.findLast { it.id eq id }
+        parseConfigs.find { it.id eq id }
+    }
+
+    suspend fun getConfigsByUsername(name: String) = DB.asyncIO {
+        parseConfigs.filter { it.user eq name }.toList()
     }
 
     suspend fun getConfigsByAuthor(name: String) = DB.asyncIO {
-        parseConfigs.filter { it.author eq name }
+        parseConfigs.filter { it.author eq name }.toList()
     }
 
     suspend fun getConfigsBySchoolName(name: String) = DB.asyncIO {
-        parseConfigs.filter { it.schoolName eq name }
+        parseConfigs.filter { it.schoolName eq name }.toList()
+    }
+
+    suspend fun getConfigsByPage(page: Int, size: Int) = DB.asyncIO {
+        require(page >= 0) { "page: $page must >= 0" }
+        require(size >= 0) { "size: $size must >= 0" }
+        parseConfigs.drop(page * size).take(size).toList()
     }
 
     suspend fun deleteConfigById(id: Int) = DB.asyncIO {

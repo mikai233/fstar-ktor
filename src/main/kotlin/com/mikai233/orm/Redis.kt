@@ -1,8 +1,9 @@
 package com.mikai233.orm
 
-import com.mikai233.tool.asyncIO
 import io.ktor.config.*
-import redis.clients.jedis.Jedis
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
+
 
 /**
  * @author mikai233
@@ -11,10 +12,11 @@ import redis.clients.jedis.Jedis
  */
 
 object Redis {
-    lateinit var client: Jedis
+    private val poolConfig = JedisPoolConfig()
+    lateinit var jedisPool: JedisPool
     fun init(config: ApplicationConfig) {
         val host = config.property("redis.host").getString()
         val port = config.property("redis.port").getString().toIntOrNull() ?: 6379
-        client = Jedis(host, port)
+        jedisPool = JedisPool(poolConfig, host, port)
     }
 }

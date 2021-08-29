@@ -13,7 +13,7 @@ import org.ktorm.schema.varchar
 
 data class User(val id: Int, val username: String, val password: String, val roles: List<String>)
 
-object Users : BaseTable<User>("fstar_admin") {
+object Users : BaseTable<User>("fstar_user") {
     val id = int("id").primaryKey()
     val username = varchar("username")
     val password = varchar("password")
