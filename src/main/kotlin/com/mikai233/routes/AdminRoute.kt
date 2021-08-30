@@ -108,7 +108,7 @@ fun Application.adminRoute() {
                         }
                     }
                     get("/month") {
-                        redisService.currentMonthVitality().also {
+                        redisService.currentMonthVitality().size.also {
                             call.respond(CommonResult(data = it))
                         }
                     }
