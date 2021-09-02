@@ -86,7 +86,7 @@ class DeviceService {
         }
     }
 
-    suspend fun countDevices() = DB.asyncIO {
+    suspend fun groupDevices() = DB.asyncIO {
         val countMap = mutableMapOf<String, Map<String, Int>>()
         val appVersion = mutableMapOf<String, Int>()
         val buildNumber = mutableMapOf<String, Int>()
@@ -115,5 +115,11 @@ class DeviceService {
         countMap[Devices.product.name.camelCase()] = product
         countMap[Devices.platform.name.camelCase()] = platform
         countMap
+    }
+
+    suspend fun countDevices() = DB.asyncIO {
+        database.from(Devices).selectDistinct(Devices.androidId).totalRecords.run {
+            mapOf("total" to this)
+        }
     }
 }
