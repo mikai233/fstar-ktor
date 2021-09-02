@@ -5,13 +5,11 @@ package com.mikai233.routes
 import com.mikai233.orm.CommonResult
 import com.mikai233.orm.Device
 import com.mikai233.orm.LoginRequest
+import com.mikai233.orm.User
 import com.mikai233.service.deviceService
 import com.mikai233.service.redisService
 import com.mikai233.service.userService
-import com.mikai233.tool.generateToken
-import com.mikai233.tool.passwordIncorrect
-import com.mikai233.tool.requestParamInvalid
-import com.mikai233.tool.userNotFound
+import com.mikai233.tool.*
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.request.*
@@ -76,11 +74,9 @@ fun Application.adminRoute() {
                         val users = userService.getUsersByPage(page, size).map { it.copy(password = "") }
                         call.respond(CommonResult(data = users))
                     }
-                    /**
-                     * 按username获取用户信息
-                     */
-                    get("/username/{username}") {
-                        val username = call.parameters["username"]
+                    //按username获取用户信息
+                    get("/name/{name}") {
+                        val username = call.parameters["name"]
                         if (username == null) {
                             call.respond(CommonResult(requestParamInvalid))
                             return@get
@@ -88,9 +84,7 @@ fun Application.adminRoute() {
                         val users = userService.getUsersByName(username).map { it.copy(password = "") }
                         call.respond(CommonResult(data = users))
                     }
-                    /**
-                     * 按id获取用户信息
-                     */
+                    //按id获取用户信息
                     get("/id/{id}") {
                         val id = call.parameters["id"]?.toIntOrNull()
                         if (id == null) {
@@ -99,6 +93,40 @@ fun Application.adminRoute() {
                         }
                         val user = userService.getUserById(id)
                         call.respond(CommonResult(data = user))
+                    }
+                    post {
+                        val user = call.receive<User>()
+                        val exists = userService.getUsersByName(user.username).firstOrNull()
+                        if (exists != null) {
+                            call.respond(CommonResult(userAlreadyExists))
+                            return@post
+                        }
+                        userService.createUser(user).also {
+                            call.respond(CommonResult(data = it))
+                        }
+                    }
+                    delete("/id/{id}") {
+                        val id = call.parameters["id"]?.toIntOrNull()
+                        if (id == null) {
+                            call.respond(CommonResult(requestParamInvalid))
+                            return@delete
+                        }
+                        userService.deleteUserById(id).also {
+                            call.respond(CommonResult(data = it))
+                        }
+                    }
+                    delete("/name/{name}") {
+                        val name = call.parameters["name"]?.toIntOrNull()
+                        if (name == null) {
+                            call.respond(CommonResult(requestParamInvalid))
+                            return@delete
+                        }
+
+                    }
+                    delete {
+                        userService.deleteAllUsers().also {
+                            call.respond(CommonResult(data = it))
+                        }
                     }
                 }
                 //活跃度统计接口
@@ -143,7 +171,7 @@ fun Application.adminRoute() {
                         get("/day") {
                             val timestamp = call.request.queryParameters["timestamp"]?.toLongOrNull()
                             if (timestamp == null) {
-                                call.respond(requestParamInvalid)
+                                call.respond(CommonResult(requestParamInvalid))
                                 return@get
                             }
                             redisService.dayVitality(LocalDate.from(Instant.ofEpochMilli(timestamp)))
@@ -152,7 +180,7 @@ fun Application.adminRoute() {
                         get("/week") {
                             val timestamp = call.request.queryParameters["timestamp"]?.toLongOrNull()
                             if (timestamp == null) {
-                                call.respond(requestParamInvalid)
+                                call.respond(CommonResult(requestParamInvalid))
                                 return@get
                             }
                             redisService.weekVitality(LocalDate.from(Instant.ofEpochMilli(timestamp)))
@@ -161,7 +189,7 @@ fun Application.adminRoute() {
                         get("/month") {
                             val timestamp = call.request.queryParameters["timestamp"]?.toLongOrNull()
                             if (timestamp == null) {
-                                call.respond(requestParamInvalid)
+                                call.respond(CommonResult(requestParamInvalid))
                                 return@get
                             }
                             redisService.monthVitality(LocalDate.from(Instant.ofEpochMilli(timestamp)))
@@ -175,7 +203,7 @@ fun Application.adminRoute() {
                         val page = queryParameters["page"]?.toIntOrNull()
                         val size = queryParameters["size"]?.toIntOrNull()
                         if (page == null || size == null || page < 0 || size < 0) {
-                            call.respond(requestParamInvalid)
+                            call.respond(CommonResult(requestParamInvalid))
                             return@get
                         }
                         deviceService.getDevicesByPage(page, size).also {
@@ -185,7 +213,7 @@ fun Application.adminRoute() {
                     get("/id/{id}") {
                         val id = call.parameters["id"]?.toIntOrNull()
                         if (id == null) {
-                            call.respond(requestParamInvalid)
+                            call.respond(CommonResult(requestParamInvalid))
                             return@get
                         }
                         deviceService.getDeviceById(id).also {
@@ -195,12 +223,34 @@ fun Application.adminRoute() {
                     get("/android_id/{androidId}") {
                         val androidId = call.parameters["androidId"]
                         if (androidId == null) {
-                            call.respond(requestParamInvalid)
+                            call.respond(CommonResult(requestParamInvalid))
                             return@get
                         }
                         deviceService.getDeviceByAndroidId(androidId).also {
                             call.respond(CommonResult(data = it))
                         }
+                    }
+                    delete("/android_id/{android_id}") {
+                        val androidId = call.parameters["androidId"]
+                        if (androidId == null) {
+                            call.respond(CommonResult(requestParamInvalid))
+                            return@delete
+                        }
+                        deviceService.deleteDevicesByAndroidId(androidId).also {
+                            call.respond(CommonResult(data = it))
+                        }
+
+                    }
+                    delete("/id") {
+                        val id = call.parameters["id"]?.toIntOrNull()
+                        if (id == null) {
+                            call.respond(CommonResult(requestParamInvalid))
+                            return@delete
+                        }
+                        deviceService.deleteDeviceById(id).also {
+                            call.respond(CommonResult(data = it))
+                        }
+
                     }
                     post {
                         val device = call.receive<Device>()
@@ -211,6 +261,11 @@ fun Application.adminRoute() {
                     patch {
                         val device = call.receive<Device>()
                         deviceService.updateDevice(device).also {
+                            call.respond(CommonResult(data = it))
+                        }
+                    }
+                    get("/count") {
+                        deviceService.countDevices().also {
                             call.respond(CommonResult(data = it))
                         }
                     }

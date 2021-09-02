@@ -89,3 +89,15 @@ suspend fun <T> Redis.asyncIO(
         }
     }
 }
+
+fun String.camelCase(): String {
+    return split("_").mapIndexed { index, value ->
+        if (value.isEmpty()) {
+            ""
+        } else if (index != 0) {
+            val charArray = value.toCharArray()
+            charArray[0] = value[0].uppercaseChar()
+            charArray.joinToString("")
+        } else value
+    }.joinToString("")
+}

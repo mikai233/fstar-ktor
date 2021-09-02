@@ -6,9 +6,8 @@ import com.mikai233.orm.DB
 import com.mikai233.orm.Device
 import com.mikai233.orm.Devices
 import com.mikai233.tool.asyncIO
-import org.ktorm.dsl.eq
-import org.ktorm.dsl.insert
-import org.ktorm.dsl.update
+import com.mikai233.tool.camelCase
+import org.ktorm.dsl.*
 import org.ktorm.entity.*
 
 /**
@@ -24,6 +23,10 @@ class DeviceService {
 
     suspend fun getDeviceByAndroidId(id: String) = DB.asyncIO {
         devices.findLast { it.androidId eq id }
+    }
+
+    suspend fun getDeviceByBuildNumberAndAndroidId(buildNumber: Int, androidId: String) = DB.asyncIO {
+        devices.findLast { (it.buildNumber eq buildNumber) and (it.androidId eq androidId) }
     }
 
     suspend fun getDevicesByPage(page: Int, size: Int) = DB.asyncIO {
@@ -66,5 +69,51 @@ class DeviceService {
                 set(Devices.platform, platform)
             }
         }
+    }
+
+    /**
+     * 删除所有匹配AndroidId的设备记录
+     */
+    suspend fun deleteDevicesByAndroidId(id: String) = DB.asyncIO {
+        database.delete(Devices) {
+            it.androidId eq id
+        }
+    }
+
+    suspend fun deleteDeviceById(id: Int) = DB.asyncIO {
+        database.delete(Devices) {
+            it.id eq id
+        }
+    }
+
+    suspend fun countDevices() = DB.asyncIO {
+        val countMap = mutableMapOf<String, Map<String, Int>>()
+        val appVersion = mutableMapOf<String, Int>()
+        val buildNumber = mutableMapOf<String, Int>()
+        val androidVersion = mutableMapOf<String, Int>()
+        val brand = mutableMapOf<String, Int>()
+        val device = mutableMapOf<String, Int>()
+        val model = mutableMapOf<String, Int>()
+        val product = mutableMapOf<String, Int>()
+        val platform = mutableMapOf<String, Int>()
+        devices.forEach {
+            appVersion[it.appVersion] = appVersion.getOrDefault(it.appVersion, 1) + 1
+            buildNumber[it.buildNumber.toString()] = buildNumber.getOrDefault(it.buildNumber.toString(), 1) + 1
+            androidVersion[it.appVersion] = androidVersion.getOrDefault(it.androidVersion, 1) + 1
+            brand[it.brand] = brand.getOrDefault(it.brand, 1) + 1
+            device[it.device] = device.getOrDefault(it.device, 1) + 1
+            model[it.model] = model.getOrDefault(it.model, 1) + 1
+            product[it.device] = product.getOrDefault(it.product, 1) + 1
+            platform[it.platform] = platform.getOrDefault(it.platform, 1) + 1
+        }
+        countMap[Devices.appVersion.name.camelCase()] = appVersion
+        countMap[Devices.buildNumber.name.camelCase()] = buildNumber
+        countMap[Devices.androidVersion.name.camelCase()] = androidVersion
+        countMap[Devices.brand.name.camelCase()] = brand
+        countMap[Devices.device.name.camelCase()] = device
+        countMap[Devices.model.name.camelCase()] = model
+        countMap[Devices.product.name.camelCase()] = product
+        countMap[Devices.platform.name.camelCase()] = platform
+        countMap
     }
 }

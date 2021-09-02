@@ -48,7 +48,7 @@ fun Application.versionRoute() {
                     model = body["model"].orEmpty(),
                     androidVersion = body["androidVersion"].orEmpty()
                 )
-                val exists = deviceService.getDeviceByAndroidId(device.androidId)
+                val exists = deviceService.getDeviceByBuildNumberAndAndroidId(device.buildNumber, device.androidId)
                 if (exists == null) {
                     deviceService.addDevice(device)
                 }
@@ -263,7 +263,7 @@ fun Application.versionRoute() {
                 post("/vitality") {
                     val device = call.receive<Device>()
                     redisService.zAddAndroidId(device.androidId)
-                    val exists = deviceService.getDeviceByAndroidId(device.androidId)
+                    val exists = deviceService.getDeviceByBuildNumberAndAndroidId(device.buildNumber, device.androidId)
                     if (exists == null) {
                         deviceService.addDevice(device)
                     }
