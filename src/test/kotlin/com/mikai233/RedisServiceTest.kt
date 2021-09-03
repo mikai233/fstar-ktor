@@ -62,4 +62,9 @@ class RedisServiceTest {
             println(it)
         }
     }
+
+    @Test
+    fun testRedisCache(): Unit = runBlocking {
+        redisService.getLatestMessageCache()
+    }
 }

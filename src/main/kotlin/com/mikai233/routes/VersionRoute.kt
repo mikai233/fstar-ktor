@@ -29,6 +29,7 @@ fun Application.versionRoute() {
     routing {
         /**
          * 旧版客户端API接口V1
+         * TODO v1接口待检查
          */
         route("/api") {
             post("/version") {
@@ -183,7 +184,13 @@ fun Application.versionRoute() {
                     call.respond(OldCommonResult(data = versions))
                 }
                 get("/current_version") {
-                    val currentVersion = versionService.getCurrentVersion()
+                    redisService.getCurrentVersionCache()?.let {
+                        call.respond(OldCommonResult(it))
+                        return@get
+                    }
+                    val currentVersion = versionService.getCurrentVersion()?.also {
+                        redisService.setCurrentVersionCache(it)
+                    }
                     call.respond(OldCommonResult(data = currentVersion))
                 }
             }
@@ -246,7 +253,13 @@ fun Application.versionRoute() {
                 }
                 //最新一条消息
                 get("/latest") {
-                    val current = messageService.getCurrentMessage()
+                    redisService.getLatestMessageCache()?.let {
+                        call.respond(OldCommonResult(it))
+                        return@get
+                    }
+                    val current = messageService.getCurrentMessage()?.also {
+                        redisService.setLatestMessageCache(it)
+                    }
                     call.respond(OldCommonResult(current))
                 }
             }

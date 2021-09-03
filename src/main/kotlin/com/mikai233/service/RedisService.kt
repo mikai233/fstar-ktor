@@ -1,6 +1,11 @@
 package com.mikai233.service
 
+import com.google.gson.Gson
+import com.mikai233.orm.Message
 import com.mikai233.orm.Redis
+import com.mikai233.orm.Score
+import com.mikai233.orm.Version
+import com.mikai233.tool.Minutes
 import com.mikai233.tool.asyncIO
 import java.time.*
 import java.time.temporal.TemporalAdjusters
@@ -17,7 +22,8 @@ import java.time.temporal.TemporalAdjusters
  */
 class RedisService {
     companion object {
-        const val vitalityKey = "fstar-vitality"
+        const val vitalityKey = "fstar_vitality"
+        val gson = Gson()
     }
 
     suspend fun getSchoolBusUrl(): String = Redis.asyncIO { client ->
@@ -101,5 +107,62 @@ class RedisService {
         val max = LocalDateTime.of(date, LocalTime.MAX).with(TemporalAdjusters.lastDayOfMonth())
             .toEpochSecond(ZoneOffset.UTC).toDouble()
         client.zrangeByScore(vitalityKey, min, max)
+    }
+
+    suspend fun getLatestMessageCache(): Message? = Redis.asyncIO { client ->
+        client.get("latest_message").run {
+            gson.fromJson(this, Message::class.java)
+        }
+    }
+
+    suspend fun setLatestMessageCache(message: Message): String = Redis.asyncIO { client ->
+        val key = "latest_message"
+        client.set(key, gson.toJson(message)).also {
+            client.expire(key, 10 * Minutes)
+        }
+    }
+
+    suspend fun getCurrentVersionCache(): Version? = Redis.asyncIO { client ->
+        client.get("current_version").run {
+            gson.fromJson(this, Version::class.java)
+        }
+    }
+
+    suspend fun setCurrentVersionCache(version: Version): String = Redis.asyncIO { client ->
+        val key = "current_version"
+        client.set(key, gson.toJson(version)).also {
+            client.expire(key, 10 * Minutes)
+        }
+    }
+
+    suspend fun getAllMessagesCache(): List<Message> = Redis.asyncIO { client ->
+        client.smembers("all_message").map {
+            gson.fromJson(it, Message::class.java)
+        }
+    }
+
+    suspend fun setAllMessagesCache(messages: List<Message>) = Redis.asyncIO { client ->
+        val key = "all_message"
+        invalidCache(key)
+        messages.forEach {
+            client.sadd(key, gson.toJson(it))
+        }
+    }
+
+    suspend fun getScoresCacheByClassNumber(number: String) = Redis.asyncIO { client ->
+        client.smembers("scores_class_number_$number").map { gson.fromJson(it, Score::class.java) }
+    }
+
+    suspend fun setScoresCacheByClassNumber(number: String, scores: List<Score>) = Redis.asyncIO { client ->
+        val key = "scores_class_number_$number"
+        invalidCache(key)
+        scores.forEach {
+            client.sadd(key, gson.toJson(it))
+        }
+    }
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    suspend fun invalidCache(key: String): Long = Redis.asyncIO { client ->
+        client.del(key)
     }
 }

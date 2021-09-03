@@ -23,11 +23,11 @@ import kotlin.coroutines.EmptyCoroutineContext
  * @date 2021/8/22
  */
 
-const val Millisecond = 1
-const val Seconds = Millisecond * 1000
-const val Minutes = Seconds * 60
-const val Hours = Minutes * 60
-const val Days = Hours * 24
+const val Millisecond = 1L
+const val Seconds = Millisecond * 1000L
+const val Minutes = Seconds * 60L
+const val Hours = Minutes * 60L
+const val Days = Hours * 24L
 
 fun Application.property(path: String) = environment.config.property(path).getString()
 
