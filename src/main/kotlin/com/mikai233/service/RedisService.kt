@@ -161,7 +161,6 @@ class RedisService {
         }
     }
 
-    @Suppress("MemberVisibilityCanBePrivate")
     suspend fun invalidCache(key: String): Long = Redis.asyncIO { client ->
         client.del(key)
     }

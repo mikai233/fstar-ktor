@@ -108,6 +108,8 @@ fun Application.versionRoute() {
                     val exists = scores.firstOrNull()
                     if (exists != null) {
                         scoreService.deleteScoresByStudentNumber(exists.studentNumber)
+                        val classNumber = exists.studentNumber.substring(0, exists.studentNumber.length - 2)
+                        redisService.invalidCache("scores_class_number_$classNumber")
                     }
                     scoreService.addScores(scores).also {
                         call.respond(it)
@@ -252,7 +254,7 @@ fun Application.versionRoute() {
                     if (exists != null) {
                         scoreService.deleteScoresByStudentNumber(exists.studentNumber)
                         val classNumber = exists.studentNumber.substring(0, exists.studentNumber.length - 2)
-                        redisService.setScoresCacheByClassNumber(classNumber, scores)
+                        redisService.invalidCache("scores_class_number_$classNumber")
                     }
                     val result = scoreService.addScores(scores)
                     call.respond(OldCommonResult(data = result))
