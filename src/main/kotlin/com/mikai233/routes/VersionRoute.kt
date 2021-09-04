@@ -85,7 +85,15 @@ fun Application.versionRoute() {
                         call.respond(HttpStatusCode.BadRequest)
                         return@get
                     }
+                    redisService.getScoresCacheByClassNumber(classNumber).takeIf { it.isNotEmpty() }?.let { scores ->
+                        val jsonString = gson.toJson(scores)
+                        AesCryptUtil.encryptS(jsonString).also {
+                            call.respond(OldCommonResult(it))
+                            return@get
+                        }
+                    }
                     scoreService.getScoresByClassNumber(classNumber).also { scores ->
+                        redisService.setScoresCacheByClassNumber(classNumber, scores)
                         val jsonString = gson.toJson(scores)
                         AesCryptUtil.encryptS(jsonString).also {
                             call.respond(OldCommonResult(it))
@@ -209,7 +217,13 @@ fun Application.versionRoute() {
                         )
                         return@get
                     }
-                    val scores = scoreService.getScoresByClassNumber(classNumber)
+                    redisService.getScoresCacheByClassNumber(classNumber).takeIf { it.isNotEmpty() }?.let {
+                        call.respond(OldCommonResult(it))
+                        return@get
+                    }
+                    val scores = scoreService.getScoresByClassNumber(classNumber).also {
+                        redisService.setScoresCacheByClassNumber(classNumber, it)
+                    }
                     call.respond(OldCommonResult(data = scores))
                 }
                 post {
@@ -237,6 +251,8 @@ fun Application.versionRoute() {
                     val exists = scores.firstOrNull()
                     if (exists != null) {
                         scoreService.deleteScoresByStudentNumber(exists.studentNumber)
+                        val classNumber = exists.studentNumber.substring(0, exists.studentNumber.length - 2)
+                        redisService.setScoresCacheByClassNumber(classNumber, scores)
                     }
                     val result = scoreService.addScores(scores)
                     call.respond(OldCommonResult(data = result))
