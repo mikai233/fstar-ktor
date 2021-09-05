@@ -99,7 +99,7 @@ class DeviceService {
         devices.forEach {
             appVersion[it.appVersion] = appVersion.getOrDefault(it.appVersion, 1) + 1
             buildNumber[it.buildNumber.toString()] = buildNumber.getOrDefault(it.buildNumber.toString(), 1) + 1
-            androidVersion[it.appVersion] = androidVersion.getOrDefault(it.androidVersion, 1) + 1
+            androidVersion[it.androidVersion] = androidVersion.getOrDefault(it.androidVersion, 1) + 1
             brand[it.brand] = brand.getOrDefault(it.brand, 1) + 1
             device[it.device] = device.getOrDefault(it.device, 1) + 1
             model[it.model] = model.getOrDefault(it.model, 1) + 1
