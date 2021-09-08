@@ -5,7 +5,6 @@ import com.mikai233.orm.Message
 import com.mikai233.orm.Redis
 import com.mikai233.orm.Score
 import com.mikai233.orm.Version
-import com.mikai233.tool.Minutes
 import com.mikai233.tool.asyncIO
 import java.time.*
 import java.time.temporal.TemporalAdjusters
@@ -118,7 +117,7 @@ class RedisService {
     suspend fun setLatestMessageCache(message: Message): String = Redis.asyncIO { client ->
         val key = "latest_message"
         client.set(key, gson.toJson(message)).also {
-            client.expire(key, 10 * Minutes)
+            client.expire(key, 10 * 60L)
         }
     }
 
@@ -131,7 +130,7 @@ class RedisService {
     suspend fun setCurrentVersionCache(version: Version): String = Redis.asyncIO { client ->
         val key = "current_version"
         client.set(key, gson.toJson(version)).also {
-            client.expire(key, 10 * Minutes)
+            client.expire(key, 10 * 60L)
         }
     }
 
