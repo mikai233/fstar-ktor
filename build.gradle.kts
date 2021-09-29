@@ -4,7 +4,7 @@ val ktorVersion: String by project
 val kotlinVersion: String by project
 val logbackVersion: String by project
 val kotlinOrmVersion: String by project
-val javaVersion = JavaVersion.VERSION_11.toString()
+val javaVersion = JavaVersion.VERSION_1_8.toString()
 
 plugins {
     application
@@ -42,6 +42,10 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+//    implementation("io.ktor:ktor-client-core:1.6.3")
+//    runtimeOnly("io.ktor:ktor-client-okhttp:1.6.3")
+    implementation("io.ktor:ktor-client-cio-jvm:1.6.3")
+    implementation("org.jsoup:jsoup:1.14.2")
 }
 
 tasks.withType<KotlinCompile> {

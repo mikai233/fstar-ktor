@@ -52,6 +52,10 @@ fun main() {
                 host = hostConfig
                 port = portConfig
             }
+            connector {
+                host = hostConfig
+                port = 9008
+            }
         }
     }) {
     }.start(wait = true)
