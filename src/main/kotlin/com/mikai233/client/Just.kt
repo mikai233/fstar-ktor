@@ -1,12 +1,15 @@
 package com.mikai233.client
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
 import io.ktor.client.features.cookies.*
+import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import org.jsoup.Jsoup
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -75,10 +78,42 @@ suspend inline fun <reified T> HttpClient.getCourse(semester: String = ""): T {
     }
 }
 
+suspend fun HttpClient.sportLogin(username: String, password: String): HttpResponse {
+    return submitForm<HttpResponse>(
+        formParameters = parametersOf(
+            "username" to listOf(username),
+            "password" to listOf(password),
+            "chkuser" to listOf("true")
+        )
+    ) {
+        url.takeFrom(SPORT_LOGIN_URL)
+    }.also { httpResponse ->
+        //gbk解码
+        val str = httpResponse.receive<String>()
+        val document = Jsoup.parse(str)
+        val info = document.select("#autonumber2 p")
+        if ("密码或用户名不正确，请返回重输！" == info.text()) {
+            throw Exception("体育账号或密码不正确")
+        }
+    }
+}
+
+suspend inline fun <reified T> HttpClient.getSportScore(): T {
+    return get(SPORT_SCORE_URL)
+}
+
+suspend inline fun <reified T> HttpClient.getSportMorning(): T {
+    return get(SPORT_MORNING_URL)
+}
+
+suspend inline fun <reified T> HttpClient.getSportClub(): T {
+    return get(SPORT_CLUB_URL)
+}
+
 fun ktorClient() = HttpClient(CIO) {
     expectSuccess = false
+    BrowserUserAgent()
     install(HttpCookies) {
-        // Will keep an in-memory map with all the cookies from previous requests.
         storage = AcceptAllCookiesStorage()
     }
     install(HttpRedirect) {

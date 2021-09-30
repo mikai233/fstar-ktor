@@ -81,6 +81,25 @@ fun Application.uniAppRoute() {
                         call.respond(CommonResult(HttpStatusCode.InternalServerError, "${e.javaClass} ${e.message}"))
                     }
                 }
+                get("/sport_score") {
+                    val queryParameters = call.request.queryParameters
+                    val username = queryParameters["username"]
+                    val password = queryParameters["password"]
+                    if (username == null || password == null) {
+                        call.respond(CommonResult(requestParamInvalid))
+                        return@get
+                    }
+                    try {
+                        with(ktorClient()) {
+                            sportLogin(username, password)
+                            getSportScore<String>()
+                        }
+                    } catch (e: Exception) {
+                        call.respond(CommonResult(HttpStatusCode.InternalServerError, "${e.javaClass} ${e.message}"))
+                    }
+                }
+                get("/sport_morning") {}
+                get("/sport_club") { }
             }
             route("/vpn2") {
 
